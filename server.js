@@ -7,7 +7,7 @@ app.use(express.json());
 app.use(cors());
 
 // CONNECT DB
-mongoose.connect("mongodb://127.0.0.1:27017/lms");
+mongoose.connect("mongodb+srv://admin:srkkNSE6YUgEKtJT@cluster0.9xvqivj.mongodb.net/lms");
 
 // ===== MODELS =====
 const User = mongoose.model("User", {
@@ -79,4 +79,4 @@ app.get("/quiz", async (req, res) => {
 });
 
 // ===== RUN =====
-app.listen(3000, () => console.log("Server running"));
+app.listen(process.env.PORT || 3000, () => console.log("Server running"));

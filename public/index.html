@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mini LMS</title>
+</head>
+<body>
+
+<h2>Create Course</h2>
+<input id="title" placeholder="Title">
+<input id="desc" placeholder="Description">
+<button onclick="createCourse()">Create</button>
+
+<h2>Courses</h2>
+<button onclick="loadCourses()">Load</button>
+<ul id="courses"></ul>
+
+<hr>
+
+<h2>Add Lesson (Video)</h2>
+<input id="lessonCourseId" placeholder="Course ID">
+<input id="lessonTitle" placeholder="Lesson title">
+<input id="videoUrl" placeholder="YouTube embed link">
+<button onclick="addLesson()">Add</button>
+
+<h2>Lessons</h2>
+<input id="viewCourseId" placeholder="Course ID">
+<button onclick="loadLessons()">Load Lessons</button>
+<ul id="lessons"></ul>
+
+<hr>
+
+<h2>Add Quiz</h2>
+<input id="question" placeholder="Question">
+<input id="op1" placeholder="Option 1">
+<input id="op2" placeholder="Option 2">
+<input id="op3" placeholder="Option 3">
+<input id="answer" placeholder="Correct (0,1,2)">
+<button onclick="addQuiz()">Add Quiz</button>
+
+<h2>Quiz</h2>
+<button onclick="loadQuiz()">Load Quiz</button>
+<div id="quiz"></div>
+
+<script>
+
+// ===== COURSE =====
+async function createCourse() {
+  await fetch("http://localhost:3000/courses", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({
+      title: title.value,
+      description: desc.value
+    })
+  });
+  alert("Created");
+}
+
+async function loadCourses() {
+  const res = await fetch("http://localhost:3000/courses");
+  const data = await res.json();
+  courses.innerHTML = data.map(c => `<li>${c.title} (ID: ${c._id})</li>`).join("");
+}
+
+// ===== LESSON =====
+async function addLesson() {
+  await fetch("http://localhost:3000/lessons", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({
+      courseId: lessonCourseId.value,
+      title: lessonTitle.value,
+      videoUrl: videoUrl.value
+    })
+  });
+  alert("Lesson added");
+}
+
+async function loadLessons() {
+  const res = await fetch("http://localhost:3000/lessons/" + viewCourseId.value);
+  const data = await res.json();
+
+  lessons.innerHTML = data.map(l => `
+    <li>
+      ${l.title}<br>
+      <iframe width="300" src="${l.videoUrl}" allowfullscreen></iframe>
+    </li>
+  `).join("");
+}
+
+// ===== QUIZ =====
+async function addQuiz() {
+  await fetch("http://localhost:3000/quiz", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({
+      question: question.value,
+      options: [op1.value, op2.value, op3.value],
+      answer: Number(answer.value)
+    })
+  });
+
+  alert("Quiz added");
+
+  // reset input
+  question.value = "";
+  op1.value = "";
+  op2.value = "";
+  op3.value = "";
+  answer.value = "";
+}
+
+async function loadQuiz() {
+  const res = await fetch("http://localhost:3000/quiz");
+  const data = await res.json();
+
+  const quizDiv = document.getElementById("quiz");
+
+  quizDiv.innerHTML = data.map(q => `
+    <div style="margin-bottom:20px;">
+      <p>${q.question}</p>
+      ${q.options.map((o, i) => `
+        <button onclick="check(${i}, ${q.answer})">${o}</button>
+      `).join("")}
+    </div>
+  `).join("");
+}
+
+function check(selected, correct) {
+  if (selected == correct) alert("Đúng!");
+  else alert("Sai!");
+}
+
+</script>
+
+</body>
+</html>
